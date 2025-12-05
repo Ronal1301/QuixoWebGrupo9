@@ -1,0 +1,41 @@
+﻿@using Quixo.Web.Models
+@{
+    ViewBag.Title = "Exportar partida a XML";
+
+    var partida = (Partida)ViewBag.Partida;
+    string sugerido = (string)ViewBag.NombreSugerido ?? $"Partida_{partida.Id}";
+}
+
+<h2>Exportar partida @partida.Id a XML</h2>
+
+<p>
+    <strong>Modo:</strong> @partida.Modo <br />
+    <strong>Fecha de creación:</strong> @partida.FechaCreacion <br />
+    <strong>Resultado:</strong> @partida.Resultado <br />
+</p>
+
+<hr />
+
+<p>Indique el nombre del archivo XML que desea generar (sin ruta, solo el nombre):</p>
+
+@using (Html.BeginForm("ExportarXml", "Partidas", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.Hidden("id", partida.Id)
+
+    <div class="form-group">
+        <label for="nombreArchivo">Nombre de archivo</label>
+        <input type="text"
+               id="nombreArchivo"
+               name="nombreArchivo"
+               class="form-control"
+               value="@sugerido" />
+        <p class="help-block">No incluya la ruta; la ubicación la decidirá el navegador al descargar.</p>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Descargar XML
+    </button>
+
+    @Html.ActionLink("Cancelar y volver", "Finalizadas", "Partidas", null, new { @class = "btn btn-default", style = "margin-left:5px;" })
+}

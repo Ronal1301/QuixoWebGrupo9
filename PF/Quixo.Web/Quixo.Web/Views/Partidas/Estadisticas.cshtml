@@ -1,0 +1,59 @@
+﻿@model Quixo.Web.Models.EstadisticasViewModel
+
+@{
+    ViewBag.Title = "Estadísticas";
+}
+
+<h2>Estadísticas</h2>
+
+<h3>Modo para dos jugadores</h3>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Jugador</th>
+            <th>Efectividad</th>
+            <th>Ganadas</th>
+            <th>Partidas totales</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var fila in Model.DosJugadores)
+        {
+            <tr>
+                <td>@fila.Nombre</td>
+                <td>@fila.Efectividad.ToString("0.##") %</td>
+                <td>@fila.PartidasGanadas</td>
+                <td>@fila.PartidasTotales</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h3>Modo para cuatro jugadores</h3>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Equipo</th>
+            <th>Efectividad</th>
+            <th>Ganadas</th>
+            <th>Partidas totales</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var fila in Model.CuatroJugadores)
+        {
+            <tr>
+                <td>@fila.Nombre</td>
+                <td>@fila.Efectividad.ToString("0.##") %</td>
+                <td>@fila.PartidasGanadas</td>
+                <td>@fila.PartidasTotales</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p>
+    @Html.ActionLink("Volver al inicio", "Index", "Home", null, new { @class = "btn btn-default" })
+</p>

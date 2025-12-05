@@ -1,0 +1,355 @@
+﻿@using Quixo.Web.Models
+@model Quixo.Web.Models.TableroQuixo
+
+@{
+    ViewBag.Title = "Partida";
+    var partida = (Partida)ViewBag.Partida;
+    var estado = (EstadoTablero)ViewBag.Estado;
+    var turnoActual = (CellOwner)ViewBag.TurnoActual;
+    int tiempoInicialSegundos = (int)ViewBag.TiempoInicialSegundos;
+
+    string textoTurno;
+    if (partida.Resultado != ResultadoPartida.EnCurso)
+    {
+        textoTurno = "Partida finalizada";
+    }
+    else if (partida.Modo == ModoPartida.DosJugadores)
+    {
+        textoTurno = turnoActual == CellOwner.Player1
+            ? "Turno de Jugador 1 (círculo - O)"
+            : "Turno de Jugador 2 (cruz - X)";
+    }
+    else // Cuatro jugadores
+    {
+        // Nos guiamos por el número de movimiento + 1
+        int siguienteMov = estado.NumeroMovimiento + 1;
+        int idx = (siguienteMov - 1) % 4;
+        switch (idx)
+        {
+            case 0:
+                textoTurno = "Turno de Jugador 1 (Equipo A, arriba)";
+                break;
+            case 1:
+                textoTurno = "Turno de Jugador 2 (Equipo B, derecha)";
+                break;
+            case 2:
+                textoTurno = "Turno de Jugador 3 (Equipo A, abajo)";
+                break;
+            default:
+                textoTurno = "Turno de Jugador 4 (Equipo B, izquierda)";
+                break;
+        }
+    }
+}
+
+<h2>Partida (@partida.Modo)</h2>
+
+<div class="row" style="margin-bottom:15px;">
+    <div class="col-md-6">
+        <p>
+            <strong>Movimiento actual:</strong> @estado.NumeroMovimiento <br />
+            <strong>@textoTurno</strong>
+        </p>
+
+        @if (partida.Modo == ModoPartida.CuatroJugadores && partida.Resultado == ResultadoPartida.EnCurso)
+        {
+            string orientacionDestino = (string)ViewBag.OrientacionDestino ?? "Self";
+
+            <div style="margin-top:10px; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                <strong>Orientación del punto para este equipo:</strong><br />
+                @using (Html.BeginForm("CambiarOrientacion", "Partidas", FormMethod.Post, new { style = "margin-top:5px;" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.Hidden("id", partida.Id)
+
+                    <label style="margin-right:10px;">
+                        <input type="radio" name="orientacion" value="Self"
+                               @(orientacionDestino == "Self" ? "checked=\"checked\"" : "") />
+                        Hacia mí
+                    </label>
+
+                    <label>
+                        <input type="radio" name="orientacion" value="Teammate"
+                               @(orientacionDestino == "Teammate" ? "checked=\"checked\"" : "") />
+                        Hacia mi compañero
+                    </label>
+
+                    <button type="submit" class="btn btn-xs btn-default" style="margin-left:10px;">
+                        Aplicar
+                    </button>
+                }
+                <small style="display:block; margin-top:4px;">
+                    Esta orientación se usará en su próxima jugada.
+                </small>
+            </div>
+        }
+
+
+        @if (partida.Resultado != ResultadoPartida.EnCurso)
+        {
+            <p>
+                <span class="label label-success">
+                    Partida finalizada: @partida.Resultado
+                </span>
+            </p>
+        }
+    </div>
+
+    <div class="col-md-6 text-right">
+        <div style="display:inline-block; text-align:left;">
+            <strong>Tiempo transcurrido:</strong><br />
+            <div id="reloj" class="reloj-7seg">00:00:00</div>
+        </div>
+
+        @using (Html.BeginForm("Reiniciar", "Partidas", FormMethod.Post, new { style = "display:inline-block; margin-left:20px;" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.Hidden("id", partida.Id)
+            <button type="submit" class="btn btn-warning">
+                Reiniciar partida
+            </button>
+        }
+    </div>
+</div>
+
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-info">
+        @TempData["Mensaje"]
+    </div>
+}
+
+<div class="row" style="margin-top:15px;">
+    <div class="col-md-2 text-center">
+        @* IZQUIERDA (solo se usa visualmente en modo 4 jugadores) *@
+        @if (partida.Modo == ModoPartida.CuatroJugadores)
+        {
+            <div class="panel panel-default">
+                <div class="panel-heading">Jugador 4</div>
+                <div class="panel-body">
+                    <span class="ficha-x">X</span><br />
+                    <small>Equipo B (izquierda)</small>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="col-md-8 text-center">
+        @* ARRIBA *@
+        @if (partida.Modo == ModoPartida.DosJugadores)
+        {
+            <div style="margin-bottom:5px;">
+                <strong>Jugador 1 (círculo - O)</strong>
+            </div>
+        }
+        else
+        {
+            <div style="margin-bottom:5px;">
+                <strong>Jugador 1 (Equipo A, arriba)</strong>
+            </div>
+        }
+
+        @* TABLERO *@
+        <table class="tabla-quixo">
+            @for (int fila = 0; fila < TableroQuixo.Size; fila++)
+            {
+                <tr>
+                    @for (int col = 0; col < TableroQuixo.Size; col++)
+                    {
+                        var celda = Model.GetCell(fila, col);
+                        var orient = Model.GetOrientation(fila, col);
+
+                        string simbolo;
+                        string cssClase;
+
+                        if (celda == CellOwner.None)
+                        {
+                            simbolo = "-";
+                            cssClase = "ficha-neutra";
+                        }
+                        else if (celda == CellOwner.Player1)
+                        {
+                            simbolo = "O";
+                            cssClase = "ficha-o";
+                        }
+                        else
+                        {
+                            simbolo = "X";
+                            cssClase = "ficha-x";
+                        }
+
+                        // Flechita para la orientación del punto (modo 4 jugadores)
+                        string flecha = "";
+                        switch (orient)
+                        {
+                            case OrientationPoint.Up: flecha = "↑"; break;
+                            case OrientationPoint.Right: flecha = "→"; break;
+                            case OrientationPoint.Down: flecha = "↓"; break;
+                            case OrientationPoint.Left: flecha = "←"; break;
+                            default: flecha = ""; break;
+                        }
+
+                        var url = Url.Action(
+                            "Seleccionar",
+                            "Partidas",
+                            new { id = partida.Id, fila = fila, col = col }
+                        );
+
+                        bool clickable = partida.Resultado == ResultadoPartida.EnCurso;
+
+                        <td>
+                            @if (clickable)
+                            {
+                                <a href="@url" class="celda-quixo @cssClase">
+                                    <span class="simbolo">@simbolo</span>
+                                    <span class="punto">@flecha</span>
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="celda-quixo @cssClase">
+                                    <span class="simbolo">@simbolo</span>
+                                    <span class="punto">@flecha</span>
+                                </span>
+                            }
+                        </td>
+
+                    }
+                </tr>
+            }
+        </table>
+
+        @* ABAJO *@
+        @if (partida.Modo == ModoPartida.DosJugadores)
+        {
+            <div style="margin-top:5px;">
+                <strong>Jugador 2 (cruz - X)</strong>
+            </div>
+        }
+        else
+        {
+            <div style="margin-top:5px;">
+                <strong>Jugador 3 (Equipo A, abajo)</strong>
+            </div>
+        }
+    </div>
+
+    <div class="col-md-2 text-center">
+        @* DERECHA (solo se usa visualmente en modo 4 jugadores) *@
+        @if (partida.Modo == ModoPartida.CuatroJugadores)
+        {
+            <div class="panel panel-default">
+                <div class="panel-heading">Jugador 2</div>
+                <div class="panel-body">
+                    <span class="ficha-x">X</span><br />
+                    <small>Equipo B (derecha)</small>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@if (partida.Modo == ModoPartida.CuatroJugadores)
+{
+    <div class="row" style="margin-top:10px;">
+    </div>
+}
+
+<p style="margin-top:20px; text-align:center;">
+    @Html.ActionLink("Volver a la lista de partidas", "Index", "Partidas", null, new { @class = "btn btn-default" })
+</p>
+
+<style>
+    .reloj-7seg {
+        font-family: "Consolas", "Courier New", monospace;
+        font-size: 24px;
+        letter-spacing: 2px;
+        padding: 5px 10px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        display: inline-block;
+        background-color: #000;
+        color: #0f0;
+    }
+
+    .tabla-quixo {
+        margin: 0 auto;
+        border-collapse: collapse;
+    }
+
+        .tabla-quixo td {
+            border: 1px solid #ccc;
+            padding: 0;
+            width: 50px;
+            height: 50px;
+        }
+
+    .celda-quixo {
+        display: block;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        text-decoration: none;
+        font-size: 20px;
+        font-weight: bold;
+    }
+    .simbolo {
+        display: block;
+        line-height: 26px;
+    }
+
+    .punto {
+        display: block;
+        font-size: 14px;
+        line-height: 14px;
+    }
+
+    .ficha-neutra {
+        color: #999;
+    }
+
+    .ficha-o {
+        color: #0066cc; /* azul para círculo */
+    }
+
+    .ficha-x {
+        color: #cc0000; /* rojo para cruz */
+    }
+
+    .panel .ficha-x,
+    .panel .ficha-o {
+        font-size: 26px;
+    }
+</style>
+
+<script>
+    (function () {
+        var segundos = @tiempoInicialSegundos;
+        var terminado = '@partida.Resultado' !== 'EnCurso';
+
+        function formato(t) {
+            var h = Math.floor(t / 3600);
+            var m = Math.floor((t % 3600) / 60);
+            var s = t % 60;
+
+            function dos(n) { return n < 10 ? "0" + n : "" + n; }
+
+            return dos(h) + ":" + dos(m) + ":" + dos(s);
+        }
+
+        function actualizar() {
+            var reloj = document.getElementById("reloj");
+            if (!reloj) return;
+            reloj.textContent = formato(segundos);
+            segundos++;
+        }
+
+        // Mostrar el tiempo actual inmediatamente
+        actualizar();
+
+        // Si la partida sigue en curso, incrementamos cada segundo
+        if (!terminado) {
+            setInterval(actualizar, 1000);
+        }
+    })();
+</script>

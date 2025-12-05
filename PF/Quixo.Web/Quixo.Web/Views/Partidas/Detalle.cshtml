@@ -1,0 +1,168 @@
+﻿@using Quixo.Web.Models
+@model Quixo.Web.Models.TableroQuixo
+
+@{
+    ViewBag.Title = "Detalle de partida";
+
+    var partida = (Partida)ViewBag.Partida;
+    var estados = (IEnumerable<EstadoTablero>)ViewBag.Estados;
+    var estadoSel = (EstadoTablero)ViewBag.EstadoSeleccionado;
+    var movimientos = (IEnumerable<Movimiento>)ViewBag.Movimientos;
+
+    // ==== TEXTO BONITO DEL RESULTADO SEGÚN MODO ====
+    string textoResultado;
+    if (partida.Resultado == ResultadoPartida.EnCurso)
+    {
+        textoResultado = "En curso";
+    }
+    else if (partida.Modo == ModoPartida.DosJugadores)
+    {
+        if (partida.Resultado == ResultadoPartida.GanoJugador1)
+        {
+            textoResultado = "Ganó Jugador 1";
+        }
+        else if (partida.Resultado == ResultadoPartida.GanoJugador2)
+        {
+            textoResultado = "Ganó Jugador 2";
+        }
+        else
+        {
+            textoResultado = partida.Resultado.ToString();
+        }
+    }
+    else // ModoPartida.CuatroJugadores
+    {
+        if (partida.Resultado == ResultadoPartida.GanoJugador1)
+        {
+            textoResultado = "Ganó Equipo A (círculo)";
+        }
+        else if (partida.Resultado == ResultadoPartida.GanoJugador2)
+        {
+            textoResultado = "Ganó Equipo B (cruz)";
+        }
+        else
+        {
+            textoResultado = partida.Resultado.ToString();
+        }
+    }
+
+    string duracion = partida.DuracionTotal == TimeSpan.Zero
+        ? "00:00:00"
+        : partida.DuracionTotal.ToString(@"hh\:mm\:ss");
+
+    // ==== RELOJ DEL MOVIMIENTO SELECCIONADO ====
+    int segMovimiento = estadoSel != null ? estadoSel.SegundosTranscurridos : 0;
+    TimeSpan tsMovimiento = TimeSpan.FromSeconds(segMovimiento);
+    string relojMovimiento = tsMovimiento.ToString(@"hh\:mm\:ss");
+}
+
+<h2>Detalle de partida @partida.Id</h2>
+
+<p>
+    <strong>Modo:</strong> @partida.Modo <br />
+    <strong>Fecha de creación:</strong> @partida.FechaCreacion <br />
+    <strong>Resultado:</strong> @textoResultado <br />
+    <strong>Duración total:</strong> @duracion
+</p>
+
+<hr />
+
+<h3>Historial de estados</h3>
+
+<p>
+    Movimiento seleccionado: @estadoSel.NumeroMovimiento
+</p>
+
+<ul class="pagination">
+    @foreach (var e in estados)
+    {
+        <li class="@(e.NumeroMovimiento == estadoSel.NumeroMovimiento ? "active" : "")">
+            @Html.ActionLink(
+                e.NumeroMovimiento.ToString(),
+                "Detalle",
+                "Partidas",
+                new { id = partida.Id, movimiento = e.NumeroMovimiento },
+                null)
+        </li>
+    }
+</ul>
+
+<hr />
+
+<h3>Tablero en el movimiento @estadoSel.NumeroMovimiento</h3>
+
+<div style="text-align:center; margin-bottom:10px;">
+    <h4>Tiempo transcurrido en este movimiento:</h4>
+    <div style="font-size:24px; font-weight:bold;">
+        @relojMovimiento
+    </div>
+</div>
+
+<table class="table table-bordered" style="width:300px; margin:auto; text-align:center;">
+    @for (int fila = 0; fila < TableroQuixo.Size; fila++)
+    {
+        <tr>
+            @for (int col = 0; col < TableroQuixo.Size; col++)
+            {
+                var celda = Model.GetCell(fila, col);
+                string simbolo = celda == CellOwner.None
+                    ? "-"
+                    : (celda == CellOwner.Player1 ? "O" : "X");
+
+                <td style="padding:8px;">
+                    @simbolo
+                </td>
+            }
+        </tr>
+    }
+</table>
+
+<hr />
+
+<h3>Movimientos registrados</h3>
+
+@if (movimientos != null && movimientos.Any())
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Origen (fila, col)</th>
+                <th>Destino (fila, col)</th>
+                <th>Dirección</th>
+                <th>Fecha/hora</th>
+                <th>Tiempo</th> @* reloj acumulado en ese movimiento *@
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var m in movimientos)
+            {
+                <tr>
+                    <td>@m.NumeroMovimiento</td>
+                    <td>(@m.FilaOrigen, @m.ColumnaOrigen)</td>
+                    <td>(@m.FilaDestino, @m.ColumnaDestino)</td>
+                    <td>@m.DireccionEmpuje</td>
+                    <td>@m.FechaHora</td>
+                    <td>
+                        @{
+                            var est = estados.FirstOrDefault(e => e.NumeroMovimiento == m.NumeroMovimiento);
+                            if (est != null)
+                            {
+                                TimeSpan t = TimeSpan.FromSeconds(est.SegundosTranscurridos);
+                                @t.ToString(@"hh\:mm\:ss")
+                            }
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No hay movimientos registrados.</p>
+}
+
+<p style="margin-top:15px;">
+    @Html.ActionLink("Volver a la lista de partidas", "Index", "Partidas", null, new { @class = "btn btn-default" })
+</p>

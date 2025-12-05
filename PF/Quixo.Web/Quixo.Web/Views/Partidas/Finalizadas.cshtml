@@ -1,0 +1,51 @@
+﻿@model IEnumerable<Quixo.Web.Models.Partida>
+
+@{
+    ViewBag.Title = "Partidas Finalizadas";
+}
+
+<h2 style="text-align:center;">Partidas Finalizadas</h2>
+
+<p style="text-align:center; margin-top:10px;">
+    @Html.ActionLink("Volver al menú principal", "Index", "Partidas", null, new { @class = "btn btn-default" })
+</p>
+
+<table class="table table-bordered table-striped" style="margin-top:20px;">
+    <thead>
+        <tr style="text-align:center;">
+            <th>ID</th>
+            <th>Fecha creación</th>
+            <th>Modo</th>
+            <th>Duración</th>
+            <th>Resultado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr style="text-align:center;">
+                <td>@p.Id</td>
+                <td>@p.FechaCreacion.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                <td>@(p.Modo == Quixo.Web.Models.ModoPartida.DosJugadores ? "2 jugadores" : "4 jugadores")</td>
+                <td>@p.DuracionTotal.ToString(@"hh\:mm\:ss")</td>
+                <td>
+                    @{
+                        string r =
+                            p.Resultado == Quixo.Web.Models.ResultadoPartida.GanoJugador1
+                            ? (p.Modo == Quixo.Web.Models.ModoPartida.DosJugadores ? "Ganó Jugador 1" : "Ganó Equipo A")
+                            : (p.Resultado == Quixo.Web.Models.ResultadoPartida.GanoJugador2
+                                ? (p.Modo == Quixo.Web.Models.ModoPartida.DosJugadores ? "Ganó Jugador 2" : "Ganó Equipo B")
+                                : "—");
+                    }
+                    @r
+                </td>
+                <td>
+                    @Html.ActionLink("Ver", "Detalle", new { id = p.Id }, new { @class = "btn btn-primary btn-sm" })
+                    @Html.ActionLink("Exportar XML", "ExportarXml", new { id = p.Id }, new { @class = "btn btn-info btn-sm", style = "margin-left:5px;" })
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

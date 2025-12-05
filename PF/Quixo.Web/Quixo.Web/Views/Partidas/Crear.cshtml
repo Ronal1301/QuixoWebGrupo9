@@ -1,0 +1,36 @@
+﻿@using Quixo.Web.Models
+
+@{
+    ViewBag.Title = "Crear nueva partida";
+}
+
+<h2>Crear nueva partida</h2>
+
+<p>Seleccione el modo de juego:</p>
+
+@using (Html.BeginForm("CrearPartida", "Partidas", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-group">
+        <label>
+            <input type="radio" name="modo" value="@ModoPartida.DosJugadores" checked="checked" />
+            Modo para dos jugadores
+        </label>
+    </div>
+
+    <div class="form-group">
+        <label>
+            <input type="radio" name="modo" value="@ModoPartida.CuatroJugadores" />
+            Modo para cuatro jugadores (preparado, reglas avanzadas pendientes)
+        </label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Iniciar partida
+    </button>
+}
+
+<p>
+    @Html.ActionLink("Volver al inicio", "Index", "Home", null, new { @class = "btn btn-default" })
+</p>

@@ -1,0 +1,39 @@
+﻿@{
+    ViewBag.Title = "Inicio";
+}
+
+<h2>Proyecto Quixo – Menú principal</h2>
+
+<p>Seleccione una de las opciones:</p>
+
+<div class="row" style="margin-top:20px;">
+    <div class="col-md-4">
+        <div class="panel panel-default">
+            <div class="panel-heading"><strong>1. Jugar una partida nueva</strong></div>
+            <div class="panel-body">
+                <p>Iniciar una nueva partida en modo para dos o cuatro jugadores.</p>
+                @Html.ActionLink("Jugar nueva partida", "Crear", "Partidas", null, new { @class = "btn btn-primary" })
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="panel panel-default">
+            <div class="panel-heading"><strong>2. Mostrar y exportar partidas</strong></div>
+            <div class="panel-body">
+                <p>Ver la lista de partidas, su historial y exportar a XML.</p>
+                @Html.ActionLink("Ver partidas", "Index", "Partidas", null, new { @class = "btn btn-info" })
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="panel panel-default">
+            <div class="panel-heading"><strong>3. Mostrar estadísticas</strong></div>
+            <div class="panel-body">
+                <p>Ver efectividad y partidas ganadas por jugador/equipo.</p>
+                @Html.ActionLink("Ver estadísticas", "Estadisticas", "Partidas", null, new { @class = "btn btn-success" })
+            </div>
+        </div>
+    </div>
+</div>
