@@ -1,0 +1,430 @@
+\documentclass[12pt]{article}
+\usepackage[spanish]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{float}
+
+\geometry{a4paper, margin=2.5cm}
+
+% Configuración para código
+\lstset{
+    language=C#,
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!60!black},
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny,
+    frame=single,
+    breaklines=true,
+    captionpos=b
+}
+
+\title{Quixo - Documentación del Proyecto}
+\author{Grupo 9}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section*{Integrantes}
+\begin{longtable}{|l|l|l|l|}
+\hline
+\textbf{Nombre} & \textbf{Carné} & \textbf{Usuario Git} & \textbf{Correo Git} \\
+\hline
+Juan Carlos Sánchez García & FI18012021 & jcsg21 & juanksanchez21@gmail.com \\
+Ronal Jesús Delgado Vásquez & FI20016028 & Ronal1301 & rjdvw2001@gmail.com \\
+Lineth Leiva Vargas & FI18009940 & Li-desing & lleiva10893@ufide.ac.cr \\
+\hline
+\end{longtable}
+
+\section*{Frameworks y Herramientas Utilizadas}
+\begin{itemize}
+    \item \textbf{ASP.NET MVC 5} (.NET Framework 4.8.1) - Framework web para desarrollo de aplicaciones MVC
+    \item \textbf{Entity Framework 6} - ORM (Object-Relational Mapping) para acceso a datos
+    \item \textbf{SQL Server Express} - Motor de base de datos relacional para persistencia de datos
+    \item \textbf{Bootstrap 3.3.7} - Framework CSS para diseño responsivo de interfaces
+    \item \textbf{jQuery 3.7.0} - Biblioteca JavaScript para manipulación del DOM
+    \item \textbf{Visual Studio 2022} - IDE principal para desarrollo .NET
+    \item \textbf{NuGet} - Gestor de paquetes para .NET
+    \item \textbf{Git} - Sistema de control de versiones
+    \item \textbf{GitHub} - Plataforma de alojamiento de código
+    \item \textbf{LaTeX} - Sistema de composición tipográfica para documentación
+    \item \textbf{PlantUML} - Herramienta para creación de diagramas UML
+\end{itemize}
+
+\section*{Tipo de Aplicación}
+MPA (Multi-Page Application) - Aplicación web tradicional con múltiples páginas HTML
+
+\section*{Arquitectura}
+MVC (Modelo-Vista-Controlador) con capas adicionales:
+\begin{itemize}
+    \item \textbf{Capa de Presentación}: Controllers, Views (Razor), Assets
+    \item \textbf{Capa de Lógica de Negocio}: Reglas del juego, Servicios de aplicación
+    \item \textbf{Capa de Acceso a Datos}: Entity Framework, DTOs, ViewModels
+    \item \textbf{Capa de Datos}: Entidades del dominio, Base de datos relacional
+\end{itemize}
+
+\section*{Definición de la Base de Datos}
+
+\subsection*{Motor de Base de Datos}
+La aplicación utiliza \textbf{SQL Server Express} como motor de base de datos relacional. La conexión se configura en el archivo \texttt{Web.config}:
+
+\begin{lstlisting}[caption=Configuración de conexión en Web.config]
+<connectionStrings>
+    <add name="QuixoConnection"
+         connectionString="Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=QuixoDB;Integrated Security=True;"
+         providerName="System.Data.SqlClient" />
+</connectionStrings>
+\end{lstlisting}
+
+\subsection*{Diagrama Entidad-Relación}
+
+El diagrama entidad-relación completo de la base de datos Quixo está disponible en formato PNG en el repositorio de GitHub: \url{https://github.com/jcsg21/QuixoWebGrupo9/blob/main/docs/diagrams/modelo_datos.png}
+
+\subsection*{Descripción Detallada de Tablas}
+
+\subsubsection*{Tabla: Jugador}
+Almacena información de los jugadores del sistema.
+\begin{itemize}
+    \item \textbf{Id}: Identificador único del jugador (autoincremental)
+    \item \textbf{Nombre}: Nombre completo del jugador (máximo 100 caracteres)
+    \item \textbf{Alias}: Apodo o nickname del jugador (máximo 50 caracteres)
+    \item \textbf{PartidasJugadas}: Contador de partidas totales jugadas
+    \item \textbf{PartidasGanadas}: Contador de partidas ganadas
+\end{itemize}
+
+\subsubsection*{Tabla: Equipo}
+Gestiona los equipos para el modo de juego de 4 jugadores.
+\begin{itemize}
+    \item \textbf{Id}: Identificador único del equipo (autoincremental)
+    \item \textbf{Nombre}: Nombre del equipo (máximo 100 caracteres)
+    \item \textbf{PartidasJugadas}: Contador de partidas totales del equipo
+    \item \textbf{PartidasGanadas}: Contador de partidas ganadas por el equipo
+\end{itemize}
+
+\subsubsection*{Tabla: Partida}
+Entidad central que representa una partida de Quixo.
+\begin{itemize}
+    \item \textbf{Id}: Identificador único de la partida (autoincremental)
+    \item \textbf{Modo}: Tipo de partida (1=Dos jugadores, 2=Cuatro jugadores)
+    \item \textbf{FechaCreacion}: Fecha y hora de creación de la partida
+    \item \textbf{DuracionTotal}: Tiempo total de duración de la partida
+    \item \textbf{Resultado}: Estado final de la partida (EnCurso, GanoJugador1, etc.)
+    \item \textbf{Jugador1Id - Jugador4Id}: Referencias a los jugadores participantes
+    \item \textbf{EquipoAId, EquipoBId}: Referencias a los equipos (modo 4 jugadores)
+\end{itemize}
+
+\subsubsection*{Tabla: Movimiento}
+Registra cada movimiento realizado durante una partida.
+\begin{itemize}
+    \item \textbf{Id}: Identificador único del movimiento (autoincremental)
+    \item \textbf{NumeroMovimiento}: Número secuencial del movimiento en la partida
+    \item \textbf{PartidaId}: Referencia a la partida correspondiente
+    \item \textbf{JugadorId}: Jugador que realizó el movimiento
+    \item \textbf{FilaOrigen, ColumnaOrigen}: Posición de origen del cubo movido
+    \item \textbf{FilaDestino, ColumnaDestino}: Posición de destino del movimiento
+    \item \textbf{DireccionEmpuje}: Dirección del empuje (Arriba, Abajo, Izquierda, Derecha)
+    \item \textbf{FechaHora}: Timestamp del movimiento
+\end{itemize}
+
+\subsubsection*{Tabla: EstadoTablero}
+Almacena snapshots del estado del tablero en cada movimiento.
+\begin{itemize}
+    \item \textbf{Id}: Identificador único del estado (autoincremental)
+    \item \textbf{PartidaId}: Referencia a la partida correspondiente
+    \item \textbf{NumeroMovimiento}: Número de movimiento correspondiente
+    \item \textbf{TableroCompacto}: Representación serializada del tablero 5x5
+    \item \textbf{SegundosTranscurridos}: Tiempo transcurrido hasta este estado
+\end{itemize}
+
+\subsection*{Script SQL de Creación de Tablas}
+
+A continuación se muestra el script SQL que Entity Framework genera automáticamente para crear las tablas de la base de datos:
+
+\begin{lstlisting}[language=SQL, caption=Script de creación de tablas]
+-- Tabla Jugadores
+CREATE TABLE [dbo].[Jugadors] (
+    [Id] INT IDENTITY (1, 1) NOT NULL,
+    [Nombre] NVARCHAR (100) NOT NULL,
+    [Alias] NVARCHAR (50) NOT NULL,
+    [PartidasJugadas] INT NOT NULL DEFAULT 0,
+    [PartidasGanadas] INT NOT NULL DEFAULT 0,
+    CONSTRAINT [PK_dbo.Jugadors] PRIMARY KEY CLUSTERED ([Id] ASC)
+);
+
+-- Tabla Equipos
+CREATE TABLE [dbo].[Equipoes] (
+    [Id] INT IDENTITY (1, 1) NOT NULL,
+    [Nombre] NVARCHAR (100) NOT NULL,
+    [PartidasJugadas] INT NOT NULL DEFAULT 0,
+    [PartidasGanadas] INT NOT NULL DEFAULT 0,
+    CONSTRAINT [PK_dbo.Equipoes] PRIMARY KEY CLUSTERED ([Id] ASC)
+);
+
+-- Tabla Partidas
+CREATE TABLE [dbo].[Partidas] (
+    [Id] INT IDENTITY (1, 1) NOT NULL,
+    [Modo] INT NOT NULL,
+    [FechaCreacion] DATETIME NOT NULL,
+    [DuracionTotal] TIME (7) NOT NULL,
+    [Resultado] INT NOT NULL,
+    [Jugador1Id] INT NULL,
+    [Jugador2Id] INT NULL,
+    [Jugador3Id] INT NULL,
+    [Jugador4Id] INT NULL,
+    [EquipoAId] INT NULL,
+    [EquipoBId] INT NULL,
+    CONSTRAINT [PK_dbo.Partidas] PRIMARY KEY CLUSTERED ([Id] ASC)
+);
+
+-- Tabla Movimientos
+CREATE TABLE [dbo].[Movimientoes] (
+    [Id] INT IDENTITY (1, 1) NOT NULL,
+    [NumeroMovimiento] INT NOT NULL,
+    [PartidaId] INT NOT NULL,
+    [JugadorId] INT NULL,
+    [FilaOrigen] INT NOT NULL,
+    [ColumnaOrigen] INT NOT NULL,
+    [FilaDestino] INT NOT NULL,
+    [ColumnaDestino] INT NOT NULL,
+    [DireccionEmpuje] NVARCHAR (20) NOT NULL,
+    [FechaHora] DATETIME NOT NULL,
+    CONSTRAINT [PK_dbo.Movimientoes] PRIMARY KEY CLUSTERED ([Id] ASC)
+);
+
+-- Tabla EstadosTablero
+CREATE TABLE [dbo].[EstadoTableroes] (
+    [Id] INT IDENTITY (1, 1) NOT NULL,
+    [PartidaId] INT NOT NULL,
+    [NumeroMovimiento] INT NOT NULL,
+    [TableroCompacto] NVARCHAR (50) NOT NULL,
+    [SegundosTranscurridos] INT NOT NULL,
+    CONSTRAINT [PK_dbo.EstadoTableroes] PRIMARY KEY CLUSTERED ([Id] ASC)
+);
+
+-- Índices y restricciones de clave foránea
+CREATE NONCLUSTERED INDEX [IX_Jugador1Id] ON [dbo].[Partidas]([Jugador1Id] ASC);
+CREATE NONCLUSTERED INDEX [IX_Jugador2Id] ON [dbo].[Partidas]([Jugador2Id] ASC);
+CREATE NONCLUSTERED INDEX [IX_Jugador3Id] ON [dbo].[Partidas]([Jugador3Id] ASC);
+CREATE NONCLUSTERED INDEX [IX_Jugador4Id] ON [dbo].[Partidas]([Jugador4Id] ASC);
+CREATE NONCLUSTERED INDEX [IX_EquipoAId] ON [dbo].[Partidas]([EquipoAId] ASC);
+CREATE NONCLUSTERED INDEX [IX_EquipoBId] ON [dbo].[Partidas]([EquipoBId] ASC);
+
+ALTER TABLE [dbo].[Partidas] ADD CONSTRAINT [FK_dbo.Partidas_dbo.Jugadors_Jugador1Id]
+    FOREIGN KEY ([Jugador1Id]) REFERENCES [dbo].[Jugadors] ([Id]);
+ALTER TABLE [dbo].[Partidas] ADD CONSTRAINT [FK_dbo.Partidas_dbo.Jugadors_Jugador2Id]
+    FOREIGN KEY ([Jugador2Id]) REFERENCES [dbo].[Jugadors] ([Id]);
+ALTER TABLE [dbo].[Partidas] ADD CONSTRAINT [FK_dbo.Partidas_dbo.Jugadors_Jugador3Id]
+    FOREIGN KEY ([Jugador3Id]) REFERENCES [dbo].[Jugadors] ([Id]);
+ALTER TABLE [dbo].[Partidas] ADD CONSTRAINT [FK_dbo.Partidas_dbo.Jugadors_Jugador4Id]
+    FOREIGN KEY ([Jugador4Id]) REFERENCES [dbo].[Jugadors] ([Id]);
+ALTER TABLE [dbo].[Partidas] ADD CONSTRAINT [FK_dbo.Partidas_dbo.Equipoes_EquipoAId]
+    FOREIGN KEY ([EquipoAId]) REFERENCES [dbo].[Equipoes] ([Id]);
+ALTER TABLE [dbo].[Partidas] ADD CONSTRAINT [FK_dbo.Partidas_dbo.Equipoes_EquipoBId]
+    FOREIGN KEY ([EquipoBId]) REFERENCES [dbo].[Equipoes] ([Id]);
+
+CREATE NONCLUSTERED INDEX [IX_PartidaId] ON [dbo].[Movimientoes]([PartidaId] ASC);
+CREATE NONCLUSTERED INDEX [IX_JugadorId] ON [dbo].[Movimientoes]([JugadorId] ASC);
+
+ALTER TABLE [dbo].[Movimientoes] ADD CONSTRAINT [FK_dbo.Movimientoes_dbo.Partidas_PartidaId]
+    FOREIGN KEY ([PartidaId]) REFERENCES [dbo].[Partidas] ([Id]) ON DELETE CASCADE;
+ALTER TABLE [dbo].[Movimientoes] ADD CONSTRAINT [FK_dbo.Movimientoes_dbo.Jugadors_JugadorId]
+    FOREIGN KEY ([JugadorId]) REFERENCES [dbo].[Jugadors] ([Id]);
+
+CREATE NONCLUSTERED INDEX [IX_PartidaId] ON [dbo].[EstadoTableroes]([PartidaId] ASC);
+
+ALTER TABLE [dbo].[EstadoTableroes] ADD CONSTRAINT [FK_dbo.EstadoTableroes_dbo.Partidas_PartidaId]
+    FOREIGN KEY ([PartidaId]) REFERENCES [dbo].[Partidas] ([Id]) ON DELETE CASCADE;
+\end{lstlisting}
+
+\subsection*{Enumeraciones y Constantes}
+
+\subsubsection*{ModoPartida}
+\begin{itemize}
+    \item \textbf{DosJugadores} = 1
+    \item \textbf{CuatroJugadores} = 2
+\end{itemize}
+
+\subsubsection*{ResultadoPartida}
+\begin{itemize}
+    \item \textbf{EnCurso} = 0
+    \item \textbf{GanoJugador1} = 1
+    \item \textbf{GanoJugador2} = 2
+    \item \textbf{GanoJugador3} = 3
+    \item \textbf{GanoJugador4} = 4
+    \item \textbf{GanoEquipoA} = 5
+    \item \textbf{GanoEquipoB} = 6
+\end{itemize}
+
+\subsubsection*{CellOwner (para lógica del juego)}
+\begin{itemize}
+    \item \textbf{None} = 0 (Casilla vacía)
+    \item \textbf{Player1} = 1 (Jugador 1/Equipo A)
+    \item \textbf{Player2} = 2 (Jugador 2/Equipo B)
+\end{itemize}
+
+\subsubsection*{OrientationPoint (modo 4 jugadores)}
+\begin{itemize}
+    \item \textbf{None} = 0
+    \item \textbf{Up} = 1
+    \item \textbf{Right} = 2
+    \item \textbf{Down} = 3
+    \item \textbf{Left} = 4
+\end{itemize}
+
+\section*{Referencias y Recursos}
+
+\subsection*{Sitios Web y Documentación}
+\begin{itemize}
+    \item \url{https://learn.microsoft.com/es-es/aspnet/mvc/overview/getting-started/introduction/getting-started} - Guía oficial de ASP.NET MVC
+    \item \url{https://learn.microsoft.com/es-es/ef/ef6/} - Documentación de Entity Framework 6
+    \item \url{https://learn.microsoft.com/es-es/sql/sql-server/?view=sql-server-ver16} - Documentación de SQL Server
+    \item \url{https://getbootstrap.com/docs/3.3/} - Documentación de Bootstrap 3.3.7
+    \item \url{https://jquery.com/} - Sitio oficial de jQuery
+    \item \url{https://plantuml.com/} - Documentación de PlantUML para diagramas
+    \item \url{https://github.com/} - Plataforma GitHub para control de versiones
+    \item \url{https://q.agency/blog/asp-net-mvc-5-multi-level-convention-based-routing/} - Enrutamiento en ASP.NET MVC
+    \item \url{https://www.entityframeworktutorial.net/code-first/what-is-code-first.aspx} - Documentación de Entity Framework 6
+    \item \url{https://www.connectionstrings.com/sql-server/} - Connection Strings en SQL Express
+    \item \url{https://www.c-sharpcorner.com/article/model-validation-in-mvc-5/} - ASP.NET MVC model validation attributes
+    \item \url{https://stackoverflow.com/questions/38514621/entity-framework-tasks-and-async-await} - C\# async await patterns with Entity Framework
+\end{itemize}
+
+\subsection*{Uso de Agentes de IA}
+
+\subsubsection*{GitHub Copilot}
+Se utilizó GitHub Copilot durante el desarrollo para:
+\begin{itemize}
+    \item Generación de código repetitivo (constructores, propiedades)
+    \item Sugerencias de métodos para manipulación de datos
+    \item Ayuda en consultas LINQ para Entity Framework
+    \item Sugerencias de validación y manejo de errores
+\end{itemize}
+
+\textbf{Prompts utilizados con Copilot:}
+\begin{itemize}
+    \item "Crear constructor para clase Partida con inicialización de colecciones"
+    \item "Método para validar movimiento en tablero Quixo"
+    \item "Consulta LINQ para obtener estadísticas de partidas por modo"
+    \item "Configuración de rutas en ASP.NET MVC"
+\end{itemize}
+
+\subsubsection*{ChatGPT}
+Se consultó ChatGPT para:
+\begin{itemize}
+    \item Resolución de problemas específicos de configuración
+    \item Explicaciones de conceptos de Entity Framework
+    \item Sugerencias de estructura de proyecto
+    \item Ayuda con sintaxis de LaTeX para documentación
+\end{itemize}
+
+\textbf{Prompts utilizados con ChatGPT:}
+\begin{itemize}
+    \item "¿Cómo configurar Entity Framework 6 con SQL Server Express?"
+    \item "Explicación de relaciones uno a muchos en EF Code First"
+    \item "Cómo crear diagramas de base de datos en LaTeX con TikZ"
+    \item "Sintaxis correcta para enumeraciones en C\# con Entity Framework"
+\end{itemize}
+
+\section*{Instructivo de Instalación y Ejecución}
+
+\subsection*{Prerrequisitos}
+\begin{itemize}
+    \item Windows 10/11 (recomendado)
+    \item Visual Studio 2022 con carga de trabajo ".NET desktop development"
+    \item SQL Server Express 2019 o superior (incluido con Visual Studio)
+    \item .NET Framework 4.8.1 (incluido con Visual Studio)
+    \item Git para control de versiones
+\end{itemize}
+
+\subsection*{Instalación}
+\begin{enumerate}
+    \item \textbf{Clonar el repositorio:}
+    \begin{lstlisting}[language=bash]
+    git clone https://github.com/jcsg21/QuixoWebGrupo9.git
+    cd QuixoWebGrupo9
+    \end{lstlisting}
+
+    \item \textbf{Abrir la solución en Visual Studio:}
+    \begin{itemize}
+        \item Ejecutar Visual Studio 2022
+        \item Seleccionar "Abrir un proyecto o solución"
+        \item Navegar a la carpeta del proyecto y seleccionar \texttt{PF/Quixo.Web/Quixo.Web.sln}
+    \end{itemize}
+
+    \item \textbf{Restaurar paquetes NuGet:}
+    \begin{itemize}
+        \item En Visual Studio: Tools $\rightarrow$ NuGet Package Manager $\rightarrow$ Restore NuGet Packages
+        \item O desde la consola: Ejecutar \texttt{nuget restore Quixo.Web.sln}
+    \end{itemize}
+
+    \item \textbf{Verificar configuración de base de datos:}
+    \begin{itemize}
+        \item Abrir \texttt{Web.config}
+        \item Verificar que la cadena de conexión \texttt{QuixoConnection} apunte a una instancia válida de SQL Server Express
+        \item Por defecto usa \texttt{(localdb)\MSSQLLocalDB}
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{Compilación}
+\begin{enumerate}
+    \item En Visual Studio: Build $\rightarrow$ Build Solution (o Ctrl+Shift+B)
+    \item Verificar que no existan errores de compilación
+    \item La compilación generará los assemblies en la carpeta \texttt{bin/}
+\end{enumerate}
+
+\subsection*{Ejecución}
+\begin{enumerate}
+    \item \textbf{Ejecutar la aplicación:}
+    \begin{itemize}
+        \item Presionar F5 o Debug $\rightarrow$ Start Debugging
+        \item La aplicación se ejecutará en IIS Express
+        \item Se abrirá automáticamente el navegador predeterminado
+    \end{itemize}
+
+    \item \textbf{Creación automática de base de datos:}
+    \begin{itemize}
+        \item Entity Framework creará automáticamente la base de datos \texttt{QuixoDB} en SQL Server Express
+        \item Las tablas se crearán según las entidades definidas en el código
+        \item Se ejecutarán las migraciones iniciales si existen
+    \end{itemize}
+
+    \item \textbf{Verificación de funcionamiento:}
+    \begin{itemize}
+        \item La página principal debe cargar correctamente
+        \item Probar crear una nueva partida
+        \item Verificar que se puede navegar entre las diferentes secciones
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{Solución de Problemas Comunes}
+
+\subsubsection*{Error de conexión a base de datos}
+\begin{itemize}
+    \item Verificar que SQL Server Express esté ejecutándose
+    \item Comprobar que la instancia \texttt{(localdb)\MSSQLLocalDB} existe
+    \item Alternativa: Cambiar la cadena de conexión a una instancia nombrada
+\end{itemize}
+
+\subsubsection*{Error de permisos}
+\begin{itemize}
+    \item Ejecutar Visual Studio como administrador
+    \item Verificar permisos de escritura en la carpeta del proyecto
+\end{itemize}
+
+\subsubsection*{Paquetes NuGet no encontrados}
+\begin{itemize}
+    \item Limpiar caché de NuGet: \texttt{nuget locals all -clear}
+    \item Restaurar paquetes nuevamente
+\end{itemize}
+
+\end{document}
