@@ -1,6 +1,4 @@
-﻿// (RECUERDA PEGAR TODO, INCLUYENDO USING)
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
